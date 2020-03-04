@@ -234,8 +234,10 @@ async def test_nursery_cant_be_reused():
         async with nursery:
             pass
 
+    coro = asyncio.sleep(0)
     with pytest.raises(NurseryClosed):
-        nursery.start_soon(asyncio.sleep(0))
+        nursery.start_soon(coro)
+    await coro
 
 
 def test_multi_error_contains_all_tracebacks():
