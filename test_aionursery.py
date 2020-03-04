@@ -140,9 +140,13 @@ async def test_child_crash_wakes_parent():
     async def crasher():
         raise error
 
+    async def runner():
+        await asyncio.sleep(1000 * 1000)
+
     with pytest.raises(MultiError) as excinfo:
         async with Nursery() as nursery:
             nursery.start_soon(crasher())
+            nursery.start_soon(runner())
             await asyncio.sleep(1000 * 1000)
 
     assert len(excinfo.value) == 1
