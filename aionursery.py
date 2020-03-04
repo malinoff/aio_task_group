@@ -5,6 +5,14 @@ import asyncio
 import textwrap
 import traceback
 
+try:
+    # Python >= 3.7
+    _get_current_task = asyncio.current_task
+    _get_event_loop = asyncio.get_running_loop
+except AttributeError:
+    _get_current_task = asyncio.Task.current_task
+    _get_event_loop = asyncio.get_event_loop
+
 __all__ = ('Nursery', 'NurseryClosed', 'MultiError')
 
 
@@ -14,13 +22,13 @@ class Nursery:
     """
 
     def __init__(self):
-        self._loop = asyncio.get_event_loop()
+        self._loop = _get_event_loop()
         self._children = set()
         self._pending_excs = []
         self._parent_task = None
         self.closed = False
 
-    def start_soon(self, coro) -> asyncio.Task:
+    def start_soon(self, coro) -> asyncio.Future:
         """
         Creates a new child task inside this nursery.
 
@@ -38,7 +46,7 @@ class Nursery:
         """
         Cancel all remaining running tasks.
         """
-        current_task = asyncio.Task.current_task()
+        current_task = _get_current_task()
         for task in self._children:
             if task is current_task:
                 continue
@@ -61,7 +69,7 @@ class Nursery:
     async def __aenter__(self):
         if self.closed:
             raise NurseryClosed
-        self._parent_task = asyncio.Task.current_task(self._loop)
+        self._parent_task = _get_current_task(self._loop)
         return self
 
     async def __aexit__(self, exc_type, exc, _):
