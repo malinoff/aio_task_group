@@ -7,11 +7,11 @@ import traceback
 
 try:
     # Python >= 3.7
-    _get_current_task = asyncio.current_task
-    _get_event_loop = asyncio.get_running_loop
+    _get_current_task = asyncio.current_task  # pylint: disable=C0103
+    _get_event_loop = asyncio.get_running_loop  # pylint: disable=C0103
 except AttributeError:
-    _get_current_task = asyncio.Task.current_task
-    _get_event_loop = asyncio.get_event_loop
+    _get_current_task = asyncio.Task.current_task  # pylint: disable=C0103
+    _get_event_loop = asyncio.get_event_loop  # pylint: disable=C0103
 
 __all__ = ('Nursery', 'NurseryClosed', 'MultiError')
 
