@@ -273,10 +273,7 @@ async def test_can_nest_nurseries():
     inner_error = RuntimeError('inner')
 
     async def child(outer):
-        if outer:
-            raise outer_error
-        else:
-            raise inner_error
+        raise outer_error if outer else inner_error
 
     with pytest.raises(MultiError) as exc_info:
         async with Nursery() as outer:
