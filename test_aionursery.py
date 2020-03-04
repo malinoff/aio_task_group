@@ -18,12 +18,11 @@ async def test_parent_block_error_basic():
     """
     error = ValueError('whoops')
 
-    with pytest.raises(MultiError) as excinfo:
+    with pytest.raises(ValueError) as excinfo:
         async with Nursery():
             raise error
 
-    assert len(excinfo.value) == 1
-    assert excinfo.value[0] is error
+    assert excinfo.value is error
 
 
 @pytest.mark.asyncio
@@ -36,12 +35,11 @@ async def test_child_crash_basic():
     async def child():
         raise error
 
-    with pytest.raises(MultiError) as excinfo:
+    with pytest.raises(ValueError) as excinfo:
         async with Nursery() as nursery:
             nursery.start_soon(child())
 
-    assert len(excinfo.value) == 1
-    assert excinfo.value[0] is error
+    assert excinfo.value is error
 
 
 @pytest.mark.asyncio
@@ -87,14 +85,13 @@ async def test_child_crash_propagation():
     async def crasher():
         raise error
 
-    with pytest.raises(MultiError) as excinfo:
+    with pytest.raises(ValueError) as excinfo:
         async with Nursery() as nursery:
             nursery.start_soon(looper())
             nursery.start_soon(crasher())
 
     assert looper_cancelled
-    assert len(excinfo.value) == 1
-    assert excinfo.value[0] is error
+    assert excinfo.value is error
 
 
 @pytest.mark.asyncio
@@ -140,13 +137,12 @@ async def test_child_crash_wakes_parent():
     async def crasher():
         raise error
 
-    with pytest.raises(MultiError) as excinfo:
+    with pytest.raises(ValueError) as excinfo:
         async with Nursery() as nursery:
             nursery.start_soon(crasher())
             await asyncio.sleep(1000 * 1000)
 
-    assert len(excinfo.value) == 1
-    assert excinfo.value[0] is error
+    assert excinfo.value is error
 
 
 @pytest.mark.asyncio
@@ -215,7 +211,7 @@ async def test_shielded_child_continues_running():
         async with Nursery() as nursery:
             nursery.start_soon(asyncio.shield(worker()))
             raise RuntimeError
-    except MultiError:
+    except RuntimeError:
         pass
 
     assert work_done
@@ -291,8 +287,8 @@ async def test_can_nest_nurseries():
     assert len(exc_info.value) == 2
     first, second = exc_info.value
     assert first is outer_error
-    assert isinstance(second, MultiError)
-    assert second[0] is inner_error
+    assert isinstance(second, RuntimeError)
+    assert second is inner_error
 
 
 @pytest.mark.asyncio

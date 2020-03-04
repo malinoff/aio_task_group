@@ -77,8 +77,10 @@ class Nursery:
         except asyncio.CancelledError:
             pass
         self.closed = True
-        if self._pending_excs:
+        if len(self._pending_excs)>1:
             raise MultiError(self._pending_excs)
+        elif self._pending_excs:
+            raise self._pending_excs[0]
 
     def __del__(self):
         assert not self._children
