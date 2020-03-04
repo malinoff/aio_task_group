@@ -78,7 +78,12 @@ class Nursery:
             pass
         self.closed = True
         if self._pending_excs:
-            raise MultiError(self._pending_excs)
+            if len(self._pending_excs) > 1:
+                exc = MultiError(self._pending_excs)
+            else:
+                exc = self._pending_excs[0]
+            raise exc
+
 
     def __del__(self):
         assert not self._children
